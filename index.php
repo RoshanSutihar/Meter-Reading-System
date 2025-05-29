@@ -161,7 +161,6 @@ $pdf->Ln(10);
 $pdf->SetFont('Arial', '', 12);
 $pdf->Cell(0, 10, "Customer Name: $Name", 0, 1);
 $pdf->Cell(0, 10, "Reading Date|Time: $DateTime", 0, 1);
-$pdf->Ln(10);
 
 // Bill Details Table
 $pdf->SetFont('Arial', 'B', 12);
@@ -199,7 +198,6 @@ $margin = 15; // Reduced margin for more space
 $availableWidth = $pageWidth - (2 * $margin);
 $imageWidth = ($availableWidth / 2) - 5; // Each image gets half width minus spacing
 $imageHeight = 100; // Fixed height for consistency
-$pdf->Ln(5);
 // Get current Y position
 $yPos = $pdf->GetY();
 
@@ -491,241 +489,279 @@ $pdfFilePath = __DIR__ . "/pdf_bills/" . $pdfFileName;
 
 
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Electricity Database</title>
-  <!-- Tell the browser to be responsive to screen width -->
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
+  <title>Add New Reading</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Font Awesome -->
-  <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
-  <!-- Ionicons -->
-  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-  <!-- icheck bootstrap -->
-  <link rel="stylesheet" href="plugins/icheck-bootstrap/icheck-bootstrap.min.css">
-  <!-- Theme style -->
-  <link rel="stylesheet" href="dist/css/adminlte.min.css">
-  <!-- Google Font: Source Sans Pro -->
-  <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
-<script src="https://www.google.com/recaptcha/api.js" async defer></script>
-
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #4361ee;
+      --secondary-color: #3f37c9;
+      --accent-color: #4895ef;
+      --light-color: #f8f9fa;
+      --dark-color: #212529;
+    }
+    
+    body {
+      background-color: #f5f7fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+    }
+    
+    .register-container {
+      width: 100%;
+      max-width: 400px;
+      margin: 0 auto;
+      margin-top:20p;
+    }
+    
+    .register-card {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+      overflow: hidden;
+    }
+    
+    .card-header {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      color: white;
+      padding: 20px;
+      border-bottom: none;
+      text-align: center;
+    }
+    
+    .card-header h3 {
+      margin: 0;
+      font-weight: 600;
+    }
+    
+    .card-body {
+      padding: 30px;
+    }
+    
+    .input-group-text {
+      background-color: var(--light-color);
+      border: 1px solid #e0e0e0;
+    }
+    
+    .form-control, .form-select {
+      border-radius: 8px;
+      padding: 10px 15px;
+      border: 1px solid #e0e0e0;
+    }
+    
+    .form-control:focus, .form-select:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+      border: none;
+      padding: 10px;
+      font-weight: 500;
+    }
+    
+    .btn-success {
+      background: linear-gradient(135deg, #4caf50, #2e7d32);
+      border: none;
+      padding: 10px;
+      font-weight: 500;
+    }
+    
+    #showerror {
+      margin-top: -10px;
+      margin-bottom: 15px;
+    }
+    
+    .login-box-msg {
+      color: #666;
+      margin-bottom: 25px;
+      font-size: 1rem;
+    }
+    
+    .file-input {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background-color: white;
+    }
+    
+    .is-valid {
+      border-color: #28a745 !important;
+    }
+    
+    .is-invalid {
+      border-color: #dc3545 !important;
+    }
+  </style>
 </head>
-<body class="hold-transition register-page">
-
-<div class="register-box">
-  <div class="register-logo">
-    <a href="#"><b>Add New Reading <i class="fas fa-lightbulb mr-2"></i></b></a>
-  </div>
-  <div class="card">
-    <div class="card-body register-card-body">
-
-    <!-- for error Message -->
-      <div id="statusMsg">
+<body>
+  <div class="register-container">
+    <div class="register-card">
+      <div class="card-header">
+        <h3><i class="fas fa-lightbulb me-2"></i>Add New Reading</h3>
       </div>
-      <?php
-      echo ErrorMessage();
-      echo SuccessMessage();
-      ?>
-      <p class="login-box-msg">Enter Details below</p>
-      
-      <form action="<?php echo htmlentities(
-          $_SERVER["PHP_SELF"],
-      ); ?>" method="post" enctype="multipart/form-data" name="enter_data">
-        <div class="input-group mb-3">
-            <select class="custom-select" name="user_id" id="for_name" onchange="changetype(this);" required>
+      <div class="card-body">
+        <!-- for error Message -->
+        <div id="statusMsg"></div>
+        <?php
+        echo ErrorMessage();
+        echo SuccessMessage();
+        ?>
+        <p class="login-box-msg">Enter Details Below</p>
+        
+        <form action="<?php echo htmlentities($_SERVER["PHP_SELF"]); ?>" method="post" enctype="multipart/form-data" name="enter_data">
+          <div class="input-group mb-3">
+            <select class="form-select" name="user_id" id="for_name" onchange="changetype(this);" required>
               <option value="">----- Select Name -----</option>
               <?php if ($User_query) {
-                  foreach ($User_query as $row) { ?>
-                          
-            <option value="<?php echo $row["user_name"]; ?>"><?php echo $row[
-    "user_name"
-]; ?></option>
-
-              <?php }
+                foreach ($User_query as $row) { ?>
+                  <option value="<?php echo $row["user_name"]; ?>"><?php echo $row["user_name"]; ?></option>
+                <?php }
               } ?>
             </select>
-            <div class="input-group-append">
-                <div class="input-group-text">
-                  <span class="fas fa-user-tag"></span>
-                </div>
-            </div>
-        </div>
-        <div class="input-group mb-3">
-          <input type="number" class="form-control" step="0.01" placeholder="Enter meter reading" name="meter" id="changecolorsecond" required>
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-tachometer-alt"></span>
-            </div>
+            <span class="input-group-text">
+              <i class="fas fa-user-tag"></i>
+            </span>
           </div>
-        </div>
-       
-        <div class="input-group mb-3" >
-          <input type="number" class="form-control" name="remeter" placeholder="Re-enter meter reading" id="changecolor" required>
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-tachometer-alt"></span>
-            </div>
+          
+          <div class="input-group mb-3">
+            <input type="number" class="form-control" step="0.01" placeholder="Enter meter reading" name="meter" id="changecolorsecond" required>
+            <span class="input-group-text">
+              <i class="fas fa-tachometer-alt"></i>
+            </span>
           </div>
-        </div>
-
-        <!-- Error message javascript -->
-
-        <div class = "input-group mb-3 " id="showerror" style="display:none;" >
-          <span id="reading_error"></span>
-        </div>
-
-        <!-- /. Error message javascript -->
-
-        <div class="input-group mb-3" id="ourmeter1" style="display: none;">
-          <input type="number" class="form-control" name="ourmeter"  placeholder="Our consumed unit">
-          <span style="color:red;"> Check our reading first then input our consumed unit here!!</span>
-        </div>
-
-      <!-- /. 
-      
-      FOR CHANGING THE YEAR ******** CHANGE IN THE VALUE AS WELL AS THE OPTION *********
-      
-      t -->
-
-        <div class="input-group mb-3">
-                <select class="custom-select" name="user_month" id="search_valid" required>
-                          <option value="">----- Select Month -----</option>
-                          <option value="Baisakh 2082">Baisakh 2082</option>
-                          <option value="Jestha 2082">Jestha 2082</option>
-                          <option value="Ashad 2082">Ashad 2082</option>
-                          <option value="Shrawan 2082">Shrawan 2082</option>
-                          <option value="Bhadra 2082">Bhadra 2082</option>
-                          <option value="Ashwin 2082">Ashwin 2082</option>
-                          <option value="Kartik 2082">Kartik 2082</option>
-                          <option value="Mangsir 2082">Mangsir 2082</option>
-                          <option value="Poush 2082">Poush 2082</option>
-                          <option value="Magh 2082">Magh 2082</option>
-                          <option value="Falgun 2082">Falgun 2082</option>
-                          <option value="Chaitra 2082">Chaitra 2082</option>
+          
+          <div class="input-group mb-3">
+            <input type="number" class="form-control" name="remeter" placeholder="Re-enter meter reading" id="changecolor" required>
+            <span class="input-group-text">
+              <i class="fas fa-tachometer-alt"></i>
+            </span>
+          </div>
+          
+          <!-- Error message javascript -->
+          <div class="input-group mb-3" id="showerror" style="display:none;">
+            <span id="reading_error" class="w-100 text-center"></span>
+          </div>
+          
+          <div class="input-group mb-3" id="ourmeter1" style="display: none;">
+            <input type="number" class="form-control" name="ourmeter" placeholder="Our consumed unit">
+            <small class="text-muted mt-1">Check our reading first then input our consumed unit here!!</small>
+          </div>
+          
+          <div class="input-group mb-3">
+            <select class="form-select" name="user_month" id="search_valid" required>
+              <option value="">----- Select Month -----</option>
+              <option value="Baisakh 2082">Baisakh 2082</option>
+              <option value="Jestha 2082">Jestha 2082</option>
+              <option value="Ashad 2082">Ashad 2082</option>
+              <option value="Shrawan 2082">Shrawan 2082</option>
+              <option value="Bhadra 2082">Bhadra 2082</option>
+              <option value="Ashwin 2082">Ashwin 2082</option>
+              <option value="Kartik 2082">Kartik 2082</option>
+              <option value="Mangsir 2082">Mangsir 2082</option>
+              <option value="Poush 2082">Poush 2082</option>
+              <option value="Magh 2082">Magh 2082</option>
+              <option value="Falgun 2082">Falgun 2082</option>
+              <option value="Chaitra 2082">Chaitra 2082</option>
             </select>
-            <div class="input-group-append">
-                <div class="input-group-text">
-                  <span class="fas fa-calendar-alt"></span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="input-group mb-3">     
-        <input type="file" name= "meter_picture" required> 
-        </div>
-
-        <div class="input-group mb-3">
-          <input type="password" class="form-control" name="transa_pin" placeholder="Security Pin 4 digit"  maxlength="4">
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-lock"></span>
-            </div>
+            <span class="input-group-text">
+              <i class="fas fa-calendar-alt"></i>
+            </span>
           </div>
-        </div>
-
-        <div class="row mb-2">
-            <div class="form-group text-center">
-                <div class="g-recaptcha" data-sitekey="<?= CONTACTFORM_RECAPTCHA_SITE_KEY ?>"></div>
-            </div>
-            <button type="submit" name="new_registration" class="btn btn-primary btn-block ">Add Reading!!</button>
-        </div>
-        <div class = "row">
-        <div class="input-group mb-3 mt-2">     
-       <a href= "dashboard.php" class="btn btn-success btn-block"> Dashboard</a>
-        </div>
-        </div>
-      </form>
-      
+          
+          <div class="mb-3">
+            <input type="file" class="file-input form-control" name="meter_picture" required>
+          </div>
+          
+          <div class="input-group mb-4">
+            <input type="password" class="form-control" name="transa_pin" placeholder="Security Pin 4 digit" maxlength="4">
+            <span class="input-group-text">
+              <i class="fas fa-lock"></i>
+            </span>
+          </div>
+          
+          <div class="mb-3">
+            <div class="g-recaptcha mb-3" data-sitekey="<?= CONTACTFORM_RECAPTCHA_SITE_KEY ?>"></div>
+            <button type="submit" name="new_registration" class="btn btn-primary btn-block">Add Reading</button>
+          </div>
+          
+          <div class="mt-2">
+            <a href="dashboard.php" class="btn btn-success btn-block">Dashboard</a>
+          </div>
+        </form>
+      </div>
     </div>
-    <!-- /.form-box -->
-  </div><!-- /.card -->
-</div>
-<!-- /.register-box -->
+  </div>
 
-<!-- jQuery -->
-<script src="plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE App -->
-<script src="dist/js/adminlte.min.js"></script>
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
+  <script type="text/javascript">
+    var meter = document.forms['enter_data']['meter'];
+    var reemeter = document.forms['enter_data']['remeter'];
 
-<script type="text/javascript">
+    function validatedata(){
+      if(meter.value === reemeter.value){
+        document.getElementById("reading_error").textContent = "Readings matched!";
+        document.getElementById("reading_error").style.color = "green";
+        document.getElementById('showerror').style.display = "block";
+        document.getElementById("changecolor").classList.add("is-valid");
+        document.getElementById("changecolor").classList.remove("is-invalid");
+        document.getElementById("changecolorsecond").classList.add("is-valid");
+        document.getElementById("changecolorsecond").classList.remove("is-invalid");
+        setTimeout(function(){document.getElementById('showerror').style.display = "none";}, 1500);
+      }
 
-var meter = document.forms['enter_data']['meter'];
+      if (meter.value != reemeter.value) {
+        document.getElementById("reading_error").textContent = "Readings don't match!";
+        document.getElementById("reading_error").style.color = "red";
+        document.getElementById('showerror').style.display = "block";
+        document.getElementById("changecolor").classList.add("is-invalid");
+        document.getElementById("changecolor").classList.remove("is-valid");
+        document.getElementById("changecolorsecond").classList.add("is-invalid");
+        document.getElementById("changecolorsecond").classList.remove("is-valid");
+        setTimeout(function(){document.getElementById('showerror').style.display = "none";}, 1500);
+      } 
+    }
+    document.enter_data.remeter.addEventListener("keyup", validatedata);
 
-var reemeter = document.forms['enter_data']['remeter'];
+    function changetype(select){
+      if(select.value == "Main Meter"){
+        document.getElementById('ourmeter1').style.display = "block";
+      } else {
+        document.getElementById('ourmeter1').style.display = "none";
+      }
+    }
 
-
-  function validatedata(){
-    if(meter.value === reemeter.value){
-    document.getElementById("reading_error").textContent = "Readings matched !";
-    document.getElementById("reading_error").style.color = "green";
-    document.getElementById('showerror').style.display = "block";
-    document.getElementById('showerror').style.textAlign = "center";
-    document.getElementById("changecolor").classList.add("is-valid");
-    document.getElementById("changecolor").classList.remove("is-invalid");
-    document.getElementById("changecolorsecond").classList.add("is-valid");
-    document.getElementById("changecolorsecond").classList.remove("is-invalid");
-    setTimeout(function(){document.getElementById('showerror').style.display = "none";}, 1500);
-  }
-
-  if (meter.value != reemeter.value) {
-    document.getElementById("reading_error").textContent = "Readings don't match !";
-    document.getElementById("reading_error").style.color = "red";
-    document.getElementById('showerror').style.display = "block";
-    document.getElementById('showerror').style.textAlign = "center";
-    document.getElementById("changecolor").classList.add("is-invalid");
-    document.getElementById("changecolor").classList.remove("is-valid");
-    document.getElementById("changecolorsecond").classList.add("is-invalid");
-    document.getElementById("changecolorsecond").classList.remove("is-valid");
-    setTimeout(function(){document.getElementById('showerror').style.display = "none";}, 1500);
-  } 
-
-  
-
-}
-document.enter_data.remeter.addEventListener("keyup", validatedata);
-</script>
-
-
-<script>
-
-function changetype(select){
-   if(select.value == "Main Meter"){
-    document.getElementById('ourmeter1').style.display = "block";
-   } else{
-       document.getElementById('ourmeter1').style.display = "none";
-   }
-}
-</script>
-
-
-
-<script>
-$('#search_valid').on("change", function fetchdata(){
-  var month = $('#search_valid').val();
-  var name = $('#for_name').val();
-$.ajax({
-
-url : "ajax/test.php",
-type: "POST",
-data: {search_name: name, search_month: month},
-success: function(data){
-  $('#statusMsg').fadeIn().html(data);
-        setTimeout(function(){  
-             $('#statusMsg').fadeOut("Slow");  
-           }, 6000); 
-}
-});
-
-});
-
-</script>
-
-
-
+    $('#search_valid').on("change", function fetchdata(){
+      var month = $('#search_valid').val();
+      var name = $('#for_name').val();
+      $.ajax({
+        url: "ajax/test.php",
+        type: "POST",
+        data: {search_name: name, search_month: month},
+        success: function(data){
+          $('#statusMsg').fadeIn().html(data);
+          setTimeout(function(){  
+            $('#statusMsg').fadeOut("Slow");  
+          }, 6000); 
+        }
+      });
+    });
+  </script>
 </body>
 </html>

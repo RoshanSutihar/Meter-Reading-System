@@ -135,15 +135,18 @@ if(isset($_GET['user_name']) && $_GET['user_name'] != '0') {
   <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark mb-4">
     <div class="container">
-      <a class="navbar-brand d-flex align-items-center" href="#">
+      <a class="navbar-brand d-flex align-items-center" href="index.php">
         <i class="fas fa-tachometer-alt me-2"></i>
         <span>Meter Readings</span>
       </a>
       <div class="d-flex align-items-center">
+      
         <span class="badge bg-light text-dark me-2">
           <i class="fas fa-calendar-day me-1"></i>
           <?php echo $onlytime; ?>
         </span>
+        <br>
+
       </div>
     </div>
   </nav>
@@ -153,6 +156,7 @@ if(isset($_GET['user_name']) && $_GET['user_name'] != '0') {
     <div class="row mb-4">
       <div class="col-12">
         <h1 class="fw-bold mb-3 text-gradient">Meter Reading History</h1>
+        <p class=" mb-3 text-gradient">Click meter reading icon at top to go back!</p>
       </div>
     </div>
     
