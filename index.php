@@ -518,7 +518,7 @@ $pdfFilePath = __DIR__ . "/pdf_bills/" . $pdfFileName;
     .register-container {
       width: 100%;
       max-width: 400px;
-      margin: 0 auto;
+      margin: 20px auto;
       margin-top:20p;
     }
     
@@ -567,6 +567,11 @@ $pdfFilePath = __DIR__ . "/pdf_bills/" . $pdfFileName;
       border: none;
       padding: 10px;
       font-weight: 500;
+    }
+    
+    .btn-primary:disabled {
+      opacity: 0.65;
+      background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     }
     
     .btn-success {
@@ -618,7 +623,6 @@ $pdfFilePath = __DIR__ . "/pdf_bills/" . $pdfFileName;
         echo ErrorMessage();
         echo SuccessMessage();
         ?>
-        <p class="login-box-msg">Enter Details Below</p>
         
         <form action="<?php echo htmlentities($_SERVER["PHP_SELF"]); ?>" method="post" enctype="multipart/form-data" name="enter_data">
           <div class="input-group mb-3">
@@ -636,7 +640,7 @@ $pdfFilePath = __DIR__ . "/pdf_bills/" . $pdfFileName;
           </div>
           
           <div class="input-group mb-3">
-            <input type="number" class="form-control" step="0.01" placeholder="Enter meter reading" name="meter" id="changecolorsecond" required>
+            <input type="number" class="form-control" placeholder="Enter meter reading" name="meter" id="changecolorsecond" required>
             <span class="input-group-text">
               <i class="fas fa-tachometer-alt"></i>
             </span>
@@ -681,7 +685,7 @@ $pdfFilePath = __DIR__ . "/pdf_bills/" . $pdfFileName;
           </div>
           
           <div class="mb-3">
-            <input type="file" class="file-input form-control" name="meter_picture" required>
+            <input type="file" class="file-input form-control" name="meter_picture" required placeholder="Select meter image">
           </div>
           
           <div class="input-group mb-4">
@@ -693,11 +697,11 @@ $pdfFilePath = __DIR__ . "/pdf_bills/" . $pdfFileName;
           
           <div class="mb-3">
             <div class="g-recaptcha mb-3" data-sitekey="<?= CONTACTFORM_RECAPTCHA_SITE_KEY ?>"></div>
-            <button type="submit" name="new_registration" class="btn btn-primary btn-block">Add Reading</button>
+            <button type="submit" name="new_registration" id="submitBtn" class="btn btn-primary btn-block" disabled>Add Reading</button>
           </div>
           
           <div class="mt-2">
-            <a href="dashboard.php" class="btn btn-success btn-block">Dashboard</a>
+            <a href="dashboard.php" class="btn btn-success btn-block">See all readings</a>
           </div>
         </form>
       </div>
@@ -724,6 +728,7 @@ $pdfFilePath = __DIR__ . "/pdf_bills/" . $pdfFileName;
         document.getElementById("changecolorsecond").classList.add("is-valid");
         document.getElementById("changecolorsecond").classList.remove("is-invalid");
         setTimeout(function(){document.getElementById('showerror').style.display = "none";}, 1500);
+        return true;
       }
 
       if (meter.value != reemeter.value) {
@@ -735,6 +740,7 @@ $pdfFilePath = __DIR__ . "/pdf_bills/" . $pdfFileName;
         document.getElementById("changecolorsecond").classList.add("is-invalid");
         document.getElementById("changecolorsecond").classList.remove("is-valid");
         setTimeout(function(){document.getElementById('showerror').style.display = "none";}, 1500);
+        return false;
       } 
     }
     document.enter_data.remeter.addEventListener("keyup", validatedata);
@@ -762,6 +768,52 @@ $pdfFilePath = __DIR__ . "/pdf_bills/" . $pdfFileName;
         }
       });
     });
+
+    // Get form elements
+    const form = document.forms['enter_data'];
+    const submitBtn = document.getElementById('submitBtn');
+    const userSelect = document.getElementById('for_name');
+
+    // Function to check if all required fields are filled
+    function checkFormValidity() {
+      const inputs = form.querySelectorAll('input[required], select[required]');
+      let allValid = true;
+      
+      inputs.forEach(input => {
+        if (!input.value.trim()) {
+          allValid = false;
+        }
+      });
+      
+      // Additional check for meter readings match
+      if (meter.value !== reemeter.value) {
+        allValid = false;
+      }
+      
+      // Enable/disable button and update text
+      if (allValid && userSelect.value) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = `Add Reading for ${userSelect.value}`;
+      } else {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Add Reading';
+      }
+    }
+
+    // Add event listeners to all form inputs
+    form.querySelectorAll('input, select').forEach(element => {
+      element.addEventListener('input', checkFormValidity);
+      element.addEventListener('change', checkFormValidity);
+    });
+
+    // Also call checkFormValidity when meter readings are validated
+    document.enter_data.remeter.addEventListener("keyup", function() {
+      validatedata();
+      checkFormValidity();
+    });
+
+    // Initial check
+    checkFormValidity();
   </script>
 </body>
 </html>
