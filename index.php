@@ -12,9 +12,6 @@ require_once __DIR__ . "/vendor/autoload.php";
 require_once __DIR__ . "/functions.php";
 require_once __DIR__ . "/config.php";
 
-// Add FPDF library
-require('fpdf/fpdf.php');
-
 $user_search = "SELECT * FROM users";
 $User_query = mysqli_query($conn, $user_search);
 $user_count = mysqli_num_rows($User_query);
@@ -147,102 +144,7 @@ if (isset($_POST["new_registration"])) {
 
                             $lowercaseString = strtolower($Name);
                             
-                           
-// Create PDF version of the bill using FPDF
-$pdf = new FPDF();
-$pdf->AddPage();
-$pdf->SetFont('Arial', 'B', 16);
-
-// Title
-$pdf->Cell(0, 10, "Electricity Bill - $Month", 0, 1, 'C');
-$pdf->Ln(10);
-
-// Customer Info
-$pdf->SetFont('Arial', '', 12);
-$pdf->Cell(0, 10, "Customer Name: $Name", 0, 1);
-$pdf->Cell(0, 10, "Reading Date|Time: $DateTime", 0, 1);
-
-// Bill Details Table
-$pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(95, 10, 'Description', 1, 0, 'C');
-$pdf->Cell(95, 10, 'Details', 1, 1, 'C');
-
-$pdf->SetFont('Arial', '', 12);
-$pdf->Cell(95, 10, 'Current Reading', 1, 0);
-$pdf->Cell(95, 10, "$Re_reading unit", 1, 1);
-
-$pdf->Cell(95, 10, 'Previous Reading', 1, 0);
-$pdf->Cell(95, 10, "$user_prevreding unit", 1, 1);
-
-$pdf->Cell(95, 10, 'Consumed Units', 1, 0);
-$pdf->Cell(95, 10, "$consumed unit(s)", 1, 1);
-
-$pdf->Cell(95, 10, 'Rate per Unit', 1, 0);
-$pdf->Cell(95, 10, "Rs. $user_rate", 1, 1);
-
-$pdf->Cell(95, 10, 'Current Remainder', 1, 0);
-$pdf->Cell(95, 10, "Rs. $left_remainder", 1, 1);
-
-$pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(95, 10, 'Total Amount Due', 1, 0);
-$pdf->Cell(95, 10, "Rs. $net_amnt", 1, 1);
-
-// Add meter photos to PDF - Side by Side with proper spacing
-
-$pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(0, 10, '************************************************************************************************************************', 0, 1, 'C');
-
-// Calculate positions for side-by-side images
-$pageWidth = $pdf->GetPageWidth();
-$margin = 15; // Reduced margin for more space
-$availableWidth = $pageWidth - (2 * $margin);
-$imageWidth = ($availableWidth / 2) - 5; // Each image gets half width minus spacing
-$imageHeight = 100; // Fixed height for consistency
-// Get current Y position
-$yPos = $pdf->GetY();
-
-// Previous Photo (left side)
-if (!empty($user_prevphoto)) {
-    // Label for previous reading
-    $pdf->SetXY($margin, $yPos);
-    $pdf->SetFont('Arial', '', 10);
-    $pdf->Cell($imageWidth, 5, 'Previous Reading', 0, 0, 'C');
-    
-    // Image for previous reading
-    $pdf->Image($user_prevphoto, $margin, $yPos + 7, $imageWidth, $imageHeight);
-}
-
-// Current Photo (right side)
-// Label for current reading
-$pdf->SetXY($margin + $imageWidth + 10, $yPos);
-$pdf->SetFont('Arial', '', 10);
-$pdf->Cell($imageWidth, 5, 'Current Reading', 0, 0, 'C');
-
-// Image for current reading
-$pdf->Image($directory, $margin + $imageWidth + 10, $yPos + 7, $imageWidth, $imageHeight);
-
-// Move Y position down below the images
-$pdf->SetY($yPos + $imageHeight + 15);
-
-// Footer
-$pdf->SetFont('Arial', 'B', 12);
-$pdf->Cell(0, 10, '************************************************************************************************************************', 0, 1, 'C');
-$pdf->SetFont('Arial', 'I', 10);
-
-$pdf->Cell(0, 10, 'Any remaining balance will be carried over to next month\'s bill.', 0, 1, 'C');
-
-$pdfFileName = "Electricity_Bill_" . $Name . "_" . str_replace(" ", "_", $Month) . ".pdf";
-$pdfFilePath = __DIR__ . "/pdf_bills/" . $pdfFileName;
-
-                            
-                            // Ensure directory exists
-                            if (!file_exists(__DIR__ . "/pdf_bills")) {
-                                mkdir(__DIR__ . "/pdf_bills", 0777, true);
-                            }
-                            
-                            $pdf->Output($pdfFilePath, 'F');
-
-                            // Send email using PHPMailer with PDF attachment
+                            // Send email using PHPMailer (without PDF attachment)
                             $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
 
                             try {
@@ -266,17 +168,14 @@ $pdfFilePath = __DIR__ . "/pdf_bills/" . $pdfFileName;
                                 );
                                 $mail->addAddress($user_number, $Name);
 
-                                $bccEmail = "roshansutihar@gmail.com"; 
+                                 $bccEmail = "roshansutihar@gmail.com"; 
                                 $bccName = "Roshan Sutihar"; 
                                 $mail->addBCC($bccEmail, $bccName);
 
                                  $bcc2Email = "binitasutihar@gmail.com"; 
                                 $bcc2Name = "Binita Sutihar"; 
                                 $mail->addBCC($bcc2Email, $bcc2Name);
-
-                                // Attach PDF
-                                $mail->addAttachment($pdfFilePath, $pdfFileName);
-
+                                
                                 // Content
                                 $mail->isHTML(true);
                                 $mail->Subject =
@@ -434,34 +333,24 @@ $pdfFilePath = __DIR__ . "/pdf_bills/" . $pdfFileName;
 </html>
 ";
 
-                                $mail->AltBody = "Dear $Name,\nYour electricity bill for the month of $Month is Rs. $net_amnt.\n\nCurrent Reading: $Re_reading\nPrevious Reading: $user_prevreding\nConsumed Units: $consumed\nRemainder: $prev_remainder\nTotal Amount: $net_amnt\n\nA PDF version of this bill is attached to this email.\n\nThank you.";
+                                $mail->AltBody = "Dear $Name,\nYour electricity bill for the month of $Month is Rs. $net_amnt.\n\nCurrent Reading: $Re_reading\nPrevious Reading: $user_prevreding\nConsumed Units: $consumed\nRemainder: $prev_remainder\nTotal Amount: $net_amnt\n\nThank you.";
 
                                 $mail->send();
-                                $_SESSION["SuccessMessage"] .=
-                                    " Email with PDF attachment sent successfully.";
-                                
-                                // Delete the PDF file after sending
-                                unlink($pdfFilePath);
+                                $_SESSION["SuccessMessage"] =
+                                    "Bill Added Successfully. Bill amount of " .
+                                    $Name .
+                                    " for " .
+                                    $Month .
+                                    " is Rs " .
+                                    $net_amnt .
+                                    ". Email sent successfully.";
                                 
                             } catch (Exception $e) {
                                 $_SESSION[
                                     "ErrorMessage"
                                 ] = "Message could not be sent. Mailer Error: {$mail->ErrorInfo}";
-                                
-                                // Delete the PDF file if email failed
-                                if (file_exists($pdfFilePath)) {
-                                    unlink($pdfFilePath);
-                                }
                             }
 
-                            $_SESSION["SuccessMessage"] =
-                                "Bill Added Successfully. Bill amount of " .
-                                $Name .
-                                " for " .
-                                $Month .
-                                " is Rs " .
-                                $net_amnt .
-                                ".";
                             Redirect_to("index.php");
 
                             $Notistmt->close();
